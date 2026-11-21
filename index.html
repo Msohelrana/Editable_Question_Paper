@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=800">
+<title>সৃজনশীল প্রশ্নপত্র (এডিটযোগ্য)</title>
+<style>
+  @page { size: A4; margin: 8mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Kalpurush', 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    background: #e9e9ee;
+    color: #1a1a1a;
+  }
+
+  /* ---------- Toolbar (প্রিন্টে আসবে না) ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(135deg, #1b1f45, #2d3478);
+    color: #fff;
+    padding: 12px 14px 10px;
+    box-shadow: 0 4px 14px rgba(20,24,70,.45);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  .tb-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+  .tb-group {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 5px; border-radius: 16px;
+  }
+  .tb-btn {
+    font: 600 18px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: 12px 18px; border: 0; border-radius: 12px;
+    color: #fff; background: rgba(255,255,255,.15);
+    cursor: pointer;
+    transition: transform .08s ease, filter .15s ease, background .15s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .tb-btn .ic { font-size: 20px; line-height: 1; }
+  .tb-btn:hover { filter: brightness(1.15); }
+  .tb-btn:active { transform: scale(.95); }
+  .tb-btn.primary { background: linear-gradient(135deg, #36d399, #12a56e); box-shadow: 0 3px 10px rgba(18,165,110,.45); }
+  .tb-btn.accent  { background: linear-gradient(135deg, #7585ff, #4b5dff); box-shadow: 0 3px 10px rgba(75,93,255,.45); }
+  .tb-btn.danger  { background: rgba(255,92,82,.16); color: #ffb9b3; box-shadow: inset 0 0 0 1px rgba(255,125,115,.55); }
+  .tb-btn.round   { width: 46px; height: 46px; padding: 0; justify-content: center; border-radius: 50%; font-size: 17px; }
+  .tb-size .fsv { min-width: 62px; text-align: center; font-size: 17px; font-weight: 600; letter-spacing: .3px; }
+  .hint { margin-top: 10px; text-align: center; font-size: 14.5px; line-height: 1.5; opacity: .8; }
+
+  .tb-btn.info { background: linear-gradient(135deg, #ffb84d, #ff8a1f); box-shadow: 0 3px 10px rgba(255,138,31,.45); }
+
+  .tb-btn[disabled] { opacity: .35; cursor: default; filter: none; }
+  .symbar {
+    display: flex; gap: 6px; margin-top: 10px; padding: 6px 4px 2px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    border-top: 1px solid rgba(255,255,255,.14);
+  }
+  .symbar button {
+    flex: none; min-width: 44px; height: 44px; padding: 0 10px; cursor: pointer;
+    font: 600 21px/1 'Noto Serif Bengali', 'Cambria Math', 'Segoe UI Symbol', system-ui, serif;
+    color: #fff; background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.18); border-radius: 11px;
+  }
+  .symbar button:hover { background: rgba(255,255,255,.26); }
+  .symbar button:active { transform: scale(.92); background: #4b5dff; }
+  button[data-act="qup"], button[data-act="qdown"] { background: #eef0f6; border-color: #c9cde0; color: #3a3f63; }
+
+  /* ---------- Instruction popup ---------- */
+  .modal {
+    position: fixed; inset: 0; z-index: 100;
+    display: none; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(15,18,50,.62);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans Bengali', sans-serif;
+  }
+  .modal.open { display: flex; animation: mfade .18s ease; }
+  @keyframes mfade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mpop { from { transform: translateY(14px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+  .mcard {
+    width: 100%; max-width: 640px; max-height: 88vh;
+    display: flex; flex-direction: column;
+    background: #fff; border-radius: 22px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(10,12,40,.5);
+    animation: mpop .22s ease;
+  }
+  .mhead {
+    flex: none; display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px; color: #fff;
+    background: linear-gradient(135deg, #1b1f45, #2d3478);
+  }
+  .mhead .mico {
+    width: 42px; height: 42px; border-radius: 12px; flex: none;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    background: linear-gradient(135deg, #ffb84d, #ff8a1f);
+  }
+  .mhead .mtitle { flex: 1; font-size: 21px; font-weight: 700; line-height: 1.25; }
+  .mhead .msub { display: block; font-size: 13.5px; font-weight: 400; opacity: .75; margin-top: 2px; }
+  .mclose {
+    flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #fff; background: rgba(255,255,255,.16);
+  }
+  .mclose:active { transform: scale(.92); }
+  .mbody { padding: 14px 16px 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f5f6fb; }
+  .mitem {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #fff; border: 1px solid #e3e6f3; border-radius: 16px;
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .mitem .mi {
+    flex: none; width: 38px; height: 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 19px;
+    background: #e8edff;
+  }
+  .mitem.g .mi { background: #e3f7ee; } .mitem.p .mi { background: #f1e8ff; }
+  .mitem.o .mi { background: #fff1dc; } .mitem.r .mi { background: #ffe9e7; }
+  .mitem h4 { margin: 0 0 3px; font-size: 16.5px; color: #1b1f45; }
+  .mitem p { margin: 0; font-size: 15px; line-height: 1.6; color: #3d4260; }
+  .mitem kbd, .mitem b.k {
+    font: 600 13px/1 system-ui, sans-serif; padding: 2px 8px; border-radius: 999px;
+    background: #eef0ff; border: 1px solid #c9cde0; color: #2c3ec7; white-space: nowrap;
+  }
+  .mfoot { flex: none; padding: 12px 16px 16px; background: #f5f6fb; }
+  .mok {
+    width: 100%; padding: 14px; border: 0; border-radius: 14px; cursor: pointer;
+    font: 700 18px/1 system-ui, sans-serif; color: #fff;
+    background: linear-gradient(135deg, #36d399, #12a56e); box-shadow: 0 3px 10px rgba(18,165,110,.4);
+  }
+  .mok:active { transform: scale(.98); }
+
+  /* ---------- Paper ---------- */
+  #sheet { position: relative; width: 194mm; max-width: 194mm; margin: 14px auto; }
+  #guides { position: absolute; left: 0; top: 0; width: 100%; height: 0; pointer-events: none; }
+  .pgline { position: absolute; left: -16px; right: -16px; height: 0; border-top: 2px dashed #e0527a; }
+  .pgline span {
+    position: absolute; right: 18px; top: 3px;
+    font: 600 12px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #e0527a; background: rgba(255,255,255,.92); padding: 3px 7px; border-radius: 8px;
+  }
+  .pgc { font: 600 16px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; padding: 0 12px; white-space: nowrap; }
+  .subq, .tblwrap { break-inside: avoid; page-break-inside: avoid; }
+  #paper {
+    --fs: 14px;
+    font-size: var(--fs);
+    width: 194mm; max-width: 194mm;
+    margin: 0;
+    padding: 10px 12px;
+    background: #fff;
+    line-height: 1.6;
+    box-shadow: 0 2px 12px rgba(0,0,0,.2);
+  }
+  .header { text-align: center; margin-bottom: .7em; }
+  .header h1 { font-size: 1.36em; margin: .2em 0; }
+  .header h2 { font-size: 1.14em; margin: .2em 0; }
+  .header h3 { font-size: 1.04em; margin: .2em 0; text-decoration: underline; }
+  .header h3:empty::before { content: 'অধ্যায়ের নাম ও নম্বর লিখুন'; color: #999; font-weight: 400; text-decoration: none; }
+  .meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+    width: 100%; margin: .6em 0 0 0;
+  }
+  .instructions { margin: .7em 0 .4em 0; text-align: center; }
+
+  .question { border-top: 1px solid #999; margin-top: 1em; padding-top: .8em; page-break-inside: avoid; position: relative; }
+  .qctl { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 7px; margin-bottom: 6px; }
+  .qctl button, .tctl button {
+    font: 600 13.5px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    border: 1px solid #c9cde0; background: #f3f4fa; color: #3a3f63;
+    transition: transform .08s ease, filter .15s ease, background .15s ease;
+  }
+  .qctl button:hover, .tctl button:hover { filter: brightness(.96); }
+  .qctl button:active, .tctl button:active { transform: scale(.94); }
+  /* কাজ অনুযায়ী রং */
+  button[data-act="addtbl"] { background: #e8edff; border-color: #aab7ff; color: #2c3ec7; }
+  button[data-act="addpart"], button[data-act="addrow"], button[data-act="addcol"] { background: #e3f7ee; border-color: #9fdcc1; color: #0d7a50; }
+  button[data-act="delrow"], button[data-act="delcol"] { background: #fff4e0; border-color: #f0cd8c; color: #9a5b00; }
+  button[data-act="delq"], button[data-act="deltbl"] { background: #ffe9e7; border-color: #f2aaa4; color: #b3261e; }
+  .qnum { font-weight: 700; font-size: 1.07em; }
+  .stem { margin: .35em 0 .55em 0; text-align: justify; }
+  .subq { display: flex; gap: .45em; margin: .35em 0 .35em 1.3em; }
+  .subq .lbl { flex: none; }
+  .subq .txt { flex: 1; }
+  .subq .mark { flex: none; font-weight: 600; margin-left: .6em; min-width: 1em; text-align: right; }
+  .px {
+    flex: none; width: 24px; height: 24px; padding: 0; align-self: center;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; line-height: 1; cursor: pointer;
+    border: 1px solid #f2aaa4; border-radius: 50%; background: #ffe9e7; color: #b3261e;
+  }
+  .px:active { transform: scale(.9); }
+
+  /* নিচের "নতুন প্রশ্ন" বাটন */
+  .addq-bar { width: 194mm; max-width: 194mm; margin: 0 auto 48px; }
+  .addq-btn {
+    width: 100%; padding: 18px 12px; cursor: pointer;
+    font: 600 20px/1.2 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #2c3ec7; background: #eef0ff;
+    border: 2px dashed #7585ff; border-radius: 16px;
+    transition: transform .08s ease, background .15s ease;
+  }
+  .addq-btn:hover { background: #e2e6ff; }
+  .addq-btn:active { transform: scale(.985); }
+
+  /* প্রশ্নের নিচে "অংশ যোগ" বাটন */
+  .pctl { margin: .5em 0 .1em 1.3em; }
+  .pctl button[data-act="addpart"] {
+    font: 600 14px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: 8px 18px; border-radius: 999px; cursor: pointer;
+    border: 1.5px dashed #7fcfae; background: #f1fbf6; color: #0d7a50;
+    transition: transform .08s ease, background .15s ease;
+  }
+  .pctl button[data-act="addpart"]:hover { background: #e3f7ee; }
+  .pctl button[data-act="addpart"]:active { transform: scale(.95); }
+
+  /* উদ্দীপকের টেবিল */
+  .tblwrap { margin: .4em 0 .6em 0; }
+  .tctl { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .tctl button { padding: 6px 11px; font-size: 13px; }
+  .tblwrap table { border-collapse: collapse; margin: 0 auto; font-size: .95em; }
+  .tblwrap th, .tblwrap td { border: 1px solid #555; padding: 2px 10px; text-align: center; min-width: 3em; }
+  .tblwrap th { font-weight: 700; }
+
+  /* উদ্দীপকের ছবি */
+  .imgwrap { margin: .4em 0 .6em 0; break-inside: avoid; page-break-inside: avoid; }
+  .imgwrap img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  button[data-act="addimg"] { background: #f1e8ff; border-color: #c9aaf5; color: #6a2fc0; }
+  button[data-act="imgsm"], button[data-act="imglg"] { background: #e3f7ee; border-color: #9fdcc1; color: #0d7a50; }
+  button[data-act="delimg"] { background: #ffe9e7; border-color: #f2aaa4; color: #b3261e; }
+
+  /* এডিট করার জায়গা চেনার জন্য (প্রিন্টে আসবে না) */
+  [contenteditable="true"] { outline: 1px dashed rgba(60,110,255,.35); outline-offset: 1px; min-width: .6em; }
+  [contenteditable="true"]:focus { outline: 2px solid #4b5dff; background: #f3f6ff; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar, .no-print, .modal { display: none !important; }
+    .header h3:empty { display: none; }
+    #sheet { margin: 0; }
+    #paper { box-shadow: none; margin: 0; width: 194mm; max-width: 194mm; }
+    [contenteditable="true"], [contenteditable="true"]:focus { outline: none !important; background: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <div class="tb-row">
+    <div class="tb-group">
+      <button type="button" class="tb-btn primary" data-act="pdf"><span class="ic">⬇</span>Download PDF</button>
+      <button type="button" class="tb-btn" data-act="print"><span class="ic">🖨</span>Print</button>
+    </div>
+    <div class="tb-group">
+      <button type="button" class="tb-btn" data-act="download"><span class="ic">💾</span>Save HTML</button>
+    </div>
+    <div class="tb-group tb-size">
+      <button type="button" class="tb-btn round" data-act="fsm">A−</button>
+      <span class="fsv" id="fsv">14px</span>
+      <button type="button" class="tb-btn round" data-act="fsp">A+</button>
+    </div>
+    <div class="tb-group">
+      <button type="button" class="tb-btn" data-act="fit"><span class="ic">📄</span>Fit to A4</button>
+      <button type="button" class="tb-btn danger" data-act="reset"><span class="ic">↺</span>Reset</button>
+    </div>
+    <div class="tb-group">
+      <button type="button" class="tb-btn round" data-act="undo" title="Undo (Ctrl+Z)">↶</button>
+      <button type="button" class="tb-btn round" data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+    </div>
+    <div class="tb-group">
+      <button type="button" class="tb-btn info" data-act="help"><span class="ic">ⓘ</span>Instruction</button>
+    </div>
+  </div>
+  <div class="symbar" id="symbar"><button type="button" data-sym="√">√</button><button type="button" data-sym="∛">∛</button><button type="button" data-sym="²">²</button><button type="button" data-sym="³">³</button><button type="button" data-sym="⁻¹">⁻¹</button><button type="button" data-sym="π">π</button><button type="button" data-sym="θ">θ</button><button type="button" data-sym="Δ">Δ</button><button type="button" data-sym="α">α</button><button type="button" data-sym="β">β</button><button type="button" data-sym="γ">γ</button><button type="button" data-sym="λ">λ</button><button type="button" data-sym="µ">µ</button><button type="button" data-sym="Ω">Ω</button><button type="button" data-sym="ω">ω</button><button type="button" data-sym="φ">φ</button><button type="button" data-sym="ε">ε</button><button type="button" data-sym="σ">σ</button><button type="button" data-sym="ρ">ρ</button><button type="button" data-sym="τ">τ</button><button type="button" data-sym="×">×</button><button type="button" data-sym="÷">÷</button><button type="button" data-sym="±">±</button><button type="button" data-sym="≈">≈</button><button type="button" data-sym="≠">≠</button><button type="button" data-sym="≤">≤</button><button type="button" data-sym="≥">≥</button><button type="button" data-sym="∞">∞</button><button type="button" data-sym="°">°</button><button type="button" data-sym="→">→</button><button type="button" data-sym="∝">∝</button><button type="button" data-sym="∴">∴</button><button type="button" data-sym="∫">∫</button><button type="button" data-sym="∑">∑</button><button type="button" data-sym="₀">₀</button><button type="button" data-sym="₁">₁</button><button type="button" data-sym="₂">₂</button><button type="button" data-sym="₃">₃</button><button type="button" data-sym="₄">₄</button><button type="button" data-sym="₅">₅</button><button type="button" data-sym="⁺">⁺</button><button type="button" data-sym="⁻">⁻</button></div>
+</div>
+
+<div id="sheet">
+<div id="paper">
+  <div class="header">
+    <h1 contenteditable="true">প্লাজমা একাডেমিক কোচিং</h1>
+    <h2 contenteditable="true">এইচএসসি পদার্থবিজ্ঞান ২য় পত্র</h2>
+    <h3 contenteditable="true"></h3>
+    <h2 contenteditable="true">সৃজনশীল প্রশ্ন</h2>
+    <div class="meta">
+      <span contenteditable="true">সময় : ৪০ মিনিট</span>
+      <span contenteditable="true">পূর্ণমান : ২০</span>
+    </div>
+  </div>
+
+  <div class="instructions" contenteditable="true">যেকোনো ২টি প্রশ্নের উত্তর দেও</div>
+
+  <div id="qs">
+
+    <div class="question">
+      <div class="qctl no-print" contenteditable="false"><button type="button" data-act="qup">↑ Up</button><button type="button" data-act="qdown">↓ Down</button><button type="button" data-act="addtbl">＋ Table</button><button type="button" data-act="addimg">＋ Image</button><button type="button" data-act="delq">✕ Delete Question</button></div>
+      <div class="qnum" contenteditable="false">১।</div>
+      <div class="stem" contenteditable="true">উদ্দীপক</div>
+      <div class="parts">
+        <div class="subq"><span class="lbl" contenteditable="true">ক.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">১</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">খ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">২</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">গ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৩</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">ঘ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৪</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+      </div>
+      <div class="pctl no-print" contenteditable="false"><button type="button" data-act="addpart">＋ Add Sub-question</button></div>
+    </div>
+
+    <div class="question">
+      <div class="qctl no-print" contenteditable="false"><button type="button" data-act="qup">↑ Up</button><button type="button" data-act="qdown">↓ Down</button><button type="button" data-act="addtbl">＋ Table</button><button type="button" data-act="addimg">＋ Image</button><button type="button" data-act="delq">✕ Delete Question</button></div>
+      <div class="qnum" contenteditable="false">২।</div>
+      <div class="stem" contenteditable="true">উদ্দীপক</div>
+      <div class="parts">
+        <div class="subq"><span class="lbl" contenteditable="true">ক.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">১</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">খ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">২</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">গ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৩</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">ঘ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৪</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+      </div>
+      <div class="pctl no-print" contenteditable="false"><button type="button" data-act="addpart">＋ Add Sub-question</button></div>
+    </div>
+
+    <div class="question">
+      <div class="qctl no-print" contenteditable="false"><button type="button" data-act="qup">↑ Up</button><button type="button" data-act="qdown">↓ Down</button><button type="button" data-act="addtbl">＋ Table</button><button type="button" data-act="addimg">＋ Image</button><button type="button" data-act="delq">✕ Delete Question</button></div>
+      <div class="qnum" contenteditable="false">৩।</div>
+      <div class="stem" contenteditable="true">উদ্দীপক</div>
+      <div class="parts">
+        <div class="subq"><span class="lbl" contenteditable="true">ক.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">১</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">খ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">২</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">গ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৩</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+        <div class="subq"><span class="lbl" contenteditable="true">ঘ.</span><span class="txt" contenteditable="true">প্রশ্ন লিখুন</span><span class="mark" contenteditable="true">৪</span><button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>
+      </div>
+      <div class="pctl no-print" contenteditable="false"><button type="button" data-act="addpart">＋ Add Sub-question</button></div>
+    </div>
+
+  </div>
+</div>
+<div id="guides" class="no-print"></div>
+</div>
+
+<div class="addq-bar no-print">
+  <button type="button" class="addq-btn" data-act="addq">＋ Add Question</button>
+</div>
+
+<div class="modal no-print" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="mcard">
+    <div class="mhead">
+      <div class="mico">ⓘ</div>
+      <div class="mtitle" id="helpTitle">ব্যবহারের নির্দেশনা<span class="msub">প্রশ্নপত্র বানানোর সব ধাপ এক জায়গায়</span></div>
+      <button type="button" class="mclose" data-act="closehelp" aria-label="Close">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="mitem"><div class="mi">✎</div><div><h4>লেখা এডিট করা</h4><p>যেকোনো লেখায় ট্যাপ করে এডিট করো — কোচিংয়ের নাম, বিষয়, অধ্যায়, সময়, পূর্ণমান, উদ্দীপক, ক–ঘ প্রশ্ন ও নম্বর সবই। নীল ড্যাশ দাগ দেখায় কোথায় লেখা যাবে (প্রিন্ট বা PDF-এ এই দাগ আসবে না)।</p></div></div>
+      <div class="mitem g"><div class="mi">＋</div><div><h4>নতুন প্রশ্ন ও উপ-প্রশ্ন</h4><p>নিচের <b class="k">＋ Add Question</b> দিয়ে নতুন প্রশ্ন, আর প্রশ্নের নিচের <b class="k">＋ Add Sub-question</b> দিয়ে নতুন ক/খ/গ/ঘ অংশ যোগ হবে। প্রশ্নের নম্বর নিজে থেকে সাজিয়ে নেবে।</p></div></div>
+      <div class="mitem"><div class="mi">▦</div><div><h4>উদ্দীপকে টেবিল</h4><p>প্রশ্নের উপরের <b class="k">＋ Table</b> চাপলে টেবিল বসবে। কোনো ঘরে ট্যাপ করে <b class="k">＋ Row</b>, <b class="k">− Row</b>, <b class="k">＋ Column</b>, <b class="k">− Column</b> দিয়ে সারি/কলাম বাড়াও বা কমাও। টেবিল মুছতে <b class="k">✕ Delete Table</b>।</p></div></div>
+      <div class="mitem p"><div class="mi">🖼</div><div><h4>উদ্দীপকে ছবি</h4><p><b class="k">＋ Image</b> চাপো, ফোন বা কম্পিউটার থেকে ছবি বেছে নাও — ছবি উদ্দীপকের নিচে বসবে। <b class="k">− Smaller</b> / <b class="k">＋ Larger</b> দিয়ে ছবির মাপ ঠিক করো, <b class="k">✕ Delete Image</b> দিয়ে মুছো। একটি প্রশ্নে একাধিক ছবি দেওয়া যায়।</p></div></div>
+      <div class="mitem o"><div class="mi">ᴀ</div><div><h4>অক্ষরের মাপ ও A4</h4><p><b class="k">A−</b> / <b class="k">A+</b> দিয়ে লেখার মাপ কমাও-বাড়াও। <b class="k">Fit to A4</b> চাপলে পুরো প্রশ্নপত্র নিজে থেকে এক পেজে এঁটে যাবে।</p></div></div>
+      <div class="mitem"><div class="mi">x²</div><div><h4>ঘাত (power) লেখা</h4><p><b class="k">10^-4</b> লিখলে নিজে থেকে <b class="k">10⁻⁴</b> হয়ে যাবে। ঘাতে ঋণাত্মক চিহ্ন ও একাধিক অঙ্কও চলবে (যেমন <b class="k">10^-12</b>)।</p></div></div>
+      <div class="mitem g"><div class="mi">⬇</div><div><h4>PDF, Print ও Save</h4><p><b class="k">Download PDF</b> চাপলে সরাসরি PDF নামবে (ইন্টারনেট লাগবে)। ইন্টারনেট না থাকলে <b class="k">Print</b> দিয়ে "Save as PDF" করো। <b class="k">Save HTML</b> দিয়ে পুরো এডিটযোগ্য ফাইল রেখে দিতে পারো। প্রশ্ন বেশি হলে একাধিক পেজ হবে।</p></div></div>
+      <div class="mitem p"><div class="mi">√</div><div><h4>গণিতের চিহ্ন বার</h4><p>উপরের টুলবারের নিচে √, π, θ, Δ, ×, ÷, ², ₂ ইত্যাদি চিহ্নের সারি আছে। আগে যেকোনো লেখায় ট্যাপ করে কার্সার রাখো, তারপর চিহ্নে ট্যাপ করলে কার্সারের জায়গায় বসে যাবে। আরও চিহ্ন দেখতে সারিটা পাশে স্ক্রল করো।</p></div></div>
+      <div class="mitem"><div class="mi">⇅</div><div><h4>প্রশ্নের ক্রম বদলানো</h4><p>প্রতিটি প্রশ্নের উপরে <b class="k">↑ Up</b> ও <b class="k">↓ Down</b> বাটন আছে — চাপলে প্রশ্নটি এক ধাপ উপরে বা নিচে সরবে, নম্বরও নিজে থেকে ঠিক হয়ে যাবে।</p></div></div>
+      <div class="mitem o"><div class="mi">↶</div><div><h4>Undo / Redo</h4><p>টুলবারের <b class="k">↶</b> দিয়ে শেষ পরিবর্তন ফিরিয়ে আনো, <b class="k">↷</b> দিয়ে আবার এগিয়ে যাও। ভুল করে প্রশ্ন, টেবিল, ছবি মুছে ফেললে বা Reset চাপলেও ফিরে পাওয়া যাবে। কিবোর্ডে <b class="k">Ctrl+Z</b> ও <b class="k">Ctrl+Y</b>-ও চলে।</p></div></div>
+      <div class="mitem r"><div class="mi">↺</div><div><h4>নিজে থেকে সেভ ও Reset</h4><p>তোমার করা সব পরিবর্তন এই ব্রাউজারে নিজে থেকে সেভ হয়। <b class="k">Reset</b> চাপলে সব মুছে শুরুর অবস্থায় ফিরে যাবে — চাপার আগে ভেবে নিও।</p></div></div>
+    </div>
+    <div class="mfoot"><button type="button" class="mok" data-act="closehelp">বুঝেছি</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var P = document.getElementById('paper');
+  var KEY = 'cqpaper:v2:' + location.pathname;
+  var FSKEY = KEY + ':fs';
+  var DEFAULT = P.innerHTML;
+  var BN = '০১২৩৪৫৬৭৮৯';
+  var LAB = ['ক', 'খ', 'গ', 'ঘ', 'ঙ', 'চ', 'ছ', 'জ'];
+  var PCTL_HTML = '<div class="pctl no-print" contenteditable="false"><button type="button" data-act="addpart">＋ Add Sub-question</button></div>';
+  var A4_LIMIT = 1055; // A4 (297mm) - 2×8mm margin ≈ 1062px
+
+  var fs = parseFloat(P.style.getPropertyValue('--fs')) || 14;
+  var hist = [], hi = -1, restoring = false;
+
+  try {
+    var saved = localStorage.getItem(KEY);
+    if (saved) P.innerHTML = saved;
+    var f = parseFloat(localStorage.getItem(FSKEY));
+    if (f) fs = f;
+  } catch (e) {}
+
+  function toBn(n) { return String(n).replace(/\d/g, function (d) { return BN[d]; }); }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, P.innerHTML);
+      localStorage.setItem(FSKEY, String(fs));
+    } catch (e) {}
+    pushHist();
+    updateGuides();
+  }
+
+  // ---------- Undo / Redo ----------
+  function pushHist() {
+    if (restoring) return;
+    var h = P.innerHTML, t = hist[hi];
+    if (t && t.h === h && t.f === fs) return;
+    hist = hist.slice(0, hi + 1);
+    hist.push({ h: h, f: fs });
+    hi = hist.length - 1;
+    var tot = 0, k;
+    for (k = 0; k < hist.length; k++) tot += hist[k].h.length;
+    while (hist.length > 2 && (hist.length > 50 || tot > 25000000)) {
+      tot -= hist[0].h.length; hist.shift(); hi--;
+    }
+    updUndo();
+  }
+  function applyHist(i) {
+    restoring = true;
+    hi = i;
+    P.innerHTML = hist[i].h;
+    setFs(hist[i].f);
+    lastCell = null;
+    save();
+    restoring = false;
+    updUndo();
+  }
+  function doUndo() {
+    clearTimeout(timer); save();
+    if (hi > 0) applyHist(hi - 1);
+  }
+  function doRedo() {
+    clearTimeout(timer);
+    if (hi < hist.length - 1) applyHist(hi + 1);
+  }
+  function updUndo() {
+    var u = document.querySelector('[data-act="undo"]'), r = document.querySelector('[data-act="redo"]');
+    if (u) u.disabled = !(hi > 0);
+    if (r) r.disabled = !(hi < hist.length - 1);
+  }
+
+  function setFs(v) {
+    fs = Math.max(8, Math.min(22, v));
+    P.style.setProperty('--fs', fs + 'px');
+    document.getElementById('fsv').textContent = fs + 'px';
+  }
+
+  function renumber() {
+    var qs = P.querySelectorAll('.question');
+    for (var i = 0; i < qs.length; i++) {
+      qs[i].querySelector('.qnum').textContent = toBn(i + 1) + '।';
+    }
+  }
+
+  function partHtml(label, text, mark) {
+    return '<div class="subq"><span class="lbl" contenteditable="true">' + label + '.</span>' +
+      '<span class="txt" contenteditable="true">' + text + '</span>' +
+      '<span class="mark" contenteditable="true">' + mark + '</span>' +
+      '<button type="button" class="px no-print" contenteditable="false" data-act="delpart" title="Delete sub-question">✕</button></div>';
+  }
+
+  function questionHtml() {
+    var parts = '';
+    var marks = ['১', '২', '৩', '৪'];
+    for (var i = 0; i < 4; i++) parts += partHtml(LAB[i], 'প্রশ্ন লিখুন', marks[i]);
+    return '<div class="question">' +
+      '<div class="qctl no-print" contenteditable="false"><button type="button" data-act="qup">↑ Up</button><button type="button" data-act="qdown">↓ Down</button><button type="button" data-act="addtbl">＋ Table</button><button type="button" data-act="addimg">＋ Image</button><button type="button" data-act="delq">✕ Delete Question</button></div>' +
+      '<div class="qnum" contenteditable="false">১।</div>' +
+      '<div class="stem" contenteditable="true">উদ্দীপক</div>' +
+      '<div class="parts">' + parts + '</div>' + PCTL_HTML + '</div>';
+  }
+
+  function fit() {
+    setFs(16);
+    while (P.offsetHeight > A4_LIMIT && fs > 8) setFs(fs - 0.25);
+    save();
+  }
+
+  function download() {
+    save();
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var blob = new Blob([html], { type: 'text/html' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'question-paper.html';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  // ---------- একাধিক পেজ: কোথায় পেজ ভাঙবে ----------
+  function computeBreaks() {
+    var base = P.getBoundingClientRect().top;
+    var total = P.offsetHeight;
+    var pageH = 281 * P.offsetWidth / 194;          // A4-এর ব্যবহারযোগ্য উচ্চতা (CSS px)
+    var qTops = [], sTops = [], i, els;
+    els = P.querySelectorAll('.question');
+    for (i = 0; i < els.length; i++) qTops.push(els[i].getBoundingClientRect().top - base + 1);
+    els = P.querySelectorAll('.subq');
+    for (i = 0; i < els.length; i++) sTops.push(els[i].getBoundingClientRect().top - base);
+
+    function lastIn(arr, from, to) {
+      var best = null;
+      for (var k = 0; k < arr.length; k++) {
+        if (arr[k] > from + 5 && arr[k] <= to && (best === null || arr[k] > best)) best = arr[k];
+      }
+      return best;
+    }
+
+    var breaks = [], start = 0, guard = 0;
+    while (total - start > pageH + 4 && guard++ < 60) {
+      var end = start + pageH;
+      var cut = lastIn(qTops, start, end);                       // আগে প্রশ্নের শুরুতে ভাঙো
+      if (cut === null || cut < start + pageH * 0.4) {           // পেজ অনেক ফাঁকা থাকলে উপ-প্রশ্নের শুরুতে ভাঙো
+        var c2 = lastIn(sTops, start, end);
+        if (c2 !== null && (cut === null || c2 > cut)) cut = c2;
+      }
+      if (cut === null) cut = end;
+      breaks.push(cut);
+      start = cut;
+    }
+    return { breaks: breaks, total: total, pageH: pageH };
+  }
+
+  function updateGuides() {
+    var g = document.getElementById('guides');
+    if (!g) return;
+    var info = computeBreaks();
+    g.innerHTML = '';
+    var pc = document.getElementById('pgc');
+    if (pc) pc.textContent = (info.breaks.length + 1) + (info.breaks.length ? ' pages' : ' page');
+  }
+
+  // ---------- সরাসরি PDF ডাউনলোড ----------
+  var H2C_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  var JSPDF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var el = document.createElement('script');
+      el.src = src;
+      el.onload = res;
+      el.onerror = function () { rej(new Error('load failed: ' + src)); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function ensureLibs() {
+    var jobs = [];
+    if (!window.html2canvas) jobs.push(loadScript(H2C_URL));
+    if (!(window.jspdf && window.jspdf.jsPDF)) jobs.push(loadScript(JSPDF_URL));
+    return Promise.all(jobs);
+  }
+
+  function downloadPdf(btn) {
+    var original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ic">⏳</span>Preparing…';
+    save();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+
+    ensureLibs().then(function () {
+      return window.html2canvas(P, {
+        scale: 2.5,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+        onclone: function (doc) {
+          var st = doc.createElement('style');
+          st.textContent = '.no-print{display:none!important}.header h3:empty{display:none}' +
+            '[contenteditable]{outline:none!important;background:none!important}' +
+            '#paper{box-shadow:none!important;margin:0!important}';
+          doc.head.appendChild(st);
+        }
+      });
+    }).then(function (canvas) {
+      var jsPDF = window.jspdf.jsPDF;
+      var pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      var IMG_W = 194, PAGE_H = 281, M = 8;
+      var cw = canvas.width;
+      var sc = cw / P.offsetWidth;                 // canvas px per CSS px
+      var info = computeBreaks();
+      var cuts = [0].concat(info.breaks).concat([info.total]);
+      var pageNo = 0;
+      for (var i = 0; i < cuts.length - 1; i++) {
+        var y0 = Math.round(cuts[i] * sc);
+        var y1 = Math.min(canvas.height, Math.round(cuts[i + 1] * sc));
+        var sh = y1 - y0;
+        if (sh <= 0) continue;
+        var sl = document.createElement('canvas');
+        sl.width = cw; sl.height = sh;
+        var ctx = sl.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cw, sh);
+        ctx.drawImage(canvas, 0, y0, cw, sh, 0, 0, cw, sh);
+        var hMm = sh * IMG_W / cw, wMm = IMG_W;
+        if (hMm > PAGE_H) { wMm = IMG_W * PAGE_H / hMm; hMm = PAGE_H; }   // সামান্য বেশি হলে একটু ছোট করে
+        if (pageNo > 0) pdf.addPage();
+        pdf.addImage(sl.toDataURL('image/png'), 'PNG', M + (IMG_W - wMm) / 2, M, wMm, hMm);
+        pageNo++;
+      }
+      pdf.save('question-paper.pdf');
+    }).catch(function (err) {
+      alert('PDF তৈরি করা যায়নি। ইন্টারনেট চালু আছে কিনা দেখো, অথবা "Print" বাটন দিয়ে PDF সেভ করো।');
+      if (window.console) console.error(err);
+    }).then(function () {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    });
+  }
+
+  // ---------- টেবিল ----------
+  var lastCell = null;
+  document.addEventListener('focusin', function (e) {
+    var c = e.target.closest && e.target.closest('.tblwrap td, .tblwrap th');
+    if (c) lastCell = c;
+  });
+
+  function tableHtml() {
+    function cells(tag, n, txt) {
+      var h = '';
+      for (var i = 0; i < n; i++) h += '<' + tag + ' contenteditable="true">' + txt + '</' + tag + '>';
+      return h;
+    }
+    var ctl = '<div class="tctl no-print" contenteditable="false">' +
+      '<button type="button" data-act="addrow">＋ Row</button>' +
+      '<button type="button" data-act="delrow">− Row</button>' +
+      '<button type="button" data-act="addcol">＋ Column</button>' +
+      '<button type="button" data-act="delcol">− Column</button>' +
+      '<button type="button" data-act="deltbl">✕ Delete Table</button></div>';
+    return '<div class="tblwrap">' + ctl + '<table><tbody>' +
+      '<tr>' + cells('th', 3, 'শিরোনাম') + '</tr>' +
+      '<tr>' + cells('td', 3, '&nbsp;') + '</tr>' +
+      '<tr>' + cells('td', 3, '&nbsp;') + '</tr>' +
+      '</tbody></table></div>';
+  }
+
+  function tblCtx(b) {
+    var w = b.closest('.tblwrap');
+    var cell = (lastCell && w.contains(lastCell)) ? lastCell : null;
+    return { w: w, t: w.querySelector('table'), cell: cell };
+  }
+
+  function newCell(tagName) {
+    var c = document.createElement(tagName);
+    c.setAttribute('contenteditable', 'true');
+    c.innerHTML = (tagName.toLowerCase() === 'th') ? 'শিরোনাম' : '&nbsp;';
+    return c;
+  }
+
+  function tableAct(act, b) {
+    var x = tblCtx(b), t = x.t, cell = x.cell, rows = t.rows, i, r, ref;
+    if (act === 'addrow') {
+      ref = cell ? cell.parentNode : rows[rows.length - 1];
+      r = document.createElement('tr');
+      for (i = 0; i < ref.cells.length; i++) r.appendChild(newCell('td'));
+      ref.parentNode.insertBefore(r, ref.nextSibling);
+    } else if (act === 'delrow') {
+      if (rows.length > 1) {
+        ref = cell ? cell.parentNode : rows[rows.length - 1];
+        ref.parentNode.removeChild(ref); lastCell = null;
+      }
+    } else if (act === 'addcol') {
+      var n = rows[0].cells.length;
+      var idx = cell ? cell.cellIndex : n - 1;
+      for (i = 0; i < rows.length; i++) {
+        ref = rows[i].cells[Math.min(idx, rows[i].cells.length - 1)];
+        rows[i].insertBefore(newCell(ref.tagName), ref.nextSibling);
+      }
+    } else if (act === 'delcol') {
+      var cols = rows[0].cells.length;
+      if (cols > 1) {
+        var di = cell ? cell.cellIndex : cols - 1;
+        for (i = 0; i < rows.length; i++) {
+          if (rows[i].cells[di]) rows[i].removeChild(rows[i].cells[di]);
+        }
+        lastCell = null;
+      }
+    } else if (act === 'deltbl') {
+      if (confirm('টেবিলটি মুছে ফেলবে?')) { x.w.parentNode.removeChild(x.w); lastCell = null; }
+    }
+    save();
+  }
+
+  // ---------- ছবি ----------
+  function imageHtml(src) {
+    return '<div class="imgwrap" contenteditable="false">' +
+      '<div class="tctl no-print" contenteditable="false">' +
+      '<button type="button" data-act="imgsm">− Smaller</button>' +
+      '<button type="button" data-act="imglg">＋ Larger</button>' +
+      '<button type="button" data-act="delimg">✕ Delete Image</button></div>' +
+      '<img src="' + src + '" style="width:60%" alt=""></div>';
+  }
+
+  function readImage(file, cb) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var MAXW = 1000, w = img.naturalWidth, h = img.naturalHeight;
+        if (w > MAXW) { h = Math.round(h * MAXW / w); w = MAXW; }
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        var isPng = /png|gif|webp|svg/i.test(file.type);
+        cb(isPng ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', 0.88));
+      };
+      img.onerror = function () { alert('ছবিটি পড়া যায়নি। অন্য ছবি দিয়ে চেষ্টা করো।'); };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+
+  function pickImage(q) {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = function () {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      readImage(f, function (src) {
+        var wraps = q.querySelectorAll('.tblwrap, .imgwrap');
+        var anchor = wraps.length ? wraps[wraps.length - 1] : q.querySelector('.stem');
+        anchor.insertAdjacentHTML('afterend', imageHtml(src));
+        save();
+      });
+    };
+    inp.click();
+  }
+
+  function resizeImage(b, delta) {
+    var im = b.closest('.imgwrap').querySelector('img');
+    var w = parseFloat(im.style.width) || 60;
+    im.style.width = Math.max(15, Math.min(100, w + delta)) + '%';
+    save();
+  }
+
+  function ensureControls() {
+    var qs = P.querySelectorAll('.question');
+    for (var i = 0; i < qs.length; i++) {
+      var q = qs[i], c = q.querySelector('.qctl');
+      if (c) {
+        if (!c.querySelector('[data-act="addtbl"]')) {
+          c.insertAdjacentHTML('afterbegin', '<button type="button" data-act="addtbl">＋ Table</button>');
+        }
+        if (!c.querySelector('[data-act="qup"]')) {
+          c.insertAdjacentHTML('afterbegin', '<button type="button" data-act="qup">↑ Up</button><button type="button" data-act="qdown">↓ Down</button>');
+        }
+        if (!c.querySelector('[data-act="addimg"]')) {
+          var tb = c.querySelector('[data-act="addtbl"]');
+          var ib = '<button type="button" data-act="addimg">＋ Image</button>';
+          if (tb) tb.insertAdjacentHTML('afterend', ib); else c.insertAdjacentHTML('afterbegin', ib);
+        }
+        var old = c.querySelector('[data-act="addpart"]');
+        if (old) old.parentNode.removeChild(old);
+      }
+      if (!q.querySelector('.pctl')) q.insertAdjacentHTML('beforeend', PCTL_HTML);
+      var LBL = { addtbl: '＋ Table', delq: '✕ Delete Question', addpart: '＋ Add Sub-question',
+                  addrow: '＋ Row', delrow: '− Row', addcol: '＋ Column', delcol: '− Column', deltbl: '✕ Delete Table',
+                  qup: '↑ Up', qdown: '↓ Down', addimg: '＋ Image', imgsm: '− Smaller', imglg: '＋ Larger', delimg: '✕ Delete Image' };
+      var bs = q.querySelectorAll('[data-act]');
+      for (var k = 0; k < bs.length; k++) {
+        var key = bs[k].getAttribute('data-act');
+        if (LBL[key]) bs[k].textContent = LBL[key];
+      }
+      var xs = q.querySelectorAll('.px');
+      for (var j = 0; j < xs.length; j++) xs[j].setAttribute('title', 'Delete sub-question');
+    }
+  }
+
+  var helpEl = document.getElementById('helpModal');
+  function openHelp() { helpEl.classList.add('open'); helpEl.querySelector('.mbody').scrollTop = 0; }
+  function closeHelp() { helpEl.classList.remove('open'); }
+  helpEl.addEventListener('click', function (e) { if (e.target === helpEl) closeHelp(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHelp(); });
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var act = b.getAttribute('data-act');
+    var q;
+    if (act === 'undo') { doUndo(); }
+    else if (act === 'redo') { doRedo(); }
+    else if (act === 'qup' || act === 'qdown') {
+      q = b.closest('.question');
+      if (act === 'qup' && q.previousElementSibling) q.parentNode.insertBefore(q, q.previousElementSibling);
+      else if (act === 'qdown' && q.nextElementSibling) q.parentNode.insertBefore(q.nextElementSibling, q);
+      else return;
+      renumber(); save();
+      try { q.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
+    }
+    else if (act === 'help') { openHelp(); }
+    else if (act === 'closehelp') { closeHelp(); }
+    else if (act === 'print') { save(); window.print(); }
+    else if (act === 'pdf') { downloadPdf(b); }
+    else if (act === 'download') { download(); }
+    else if (act === 'addq') {
+      var qsEl = document.getElementById('qs');
+      qsEl.insertAdjacentHTML('beforeend', questionHtml());
+      renumber(); save();
+      try { qsEl.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
+    }
+    else if (act === 'delq') {
+      if (confirm('এই প্রশ্নটি মুছে ফেলবে?')) {
+        q = b.closest('.question'); q.parentNode.removeChild(q);
+        renumber(); save();
+      }
+    }
+    else if (act === 'addpart') {
+      q = b.closest('.question');
+      var parts = q.querySelector('.parts');
+      var n = parts.children.length;
+      parts.insertAdjacentHTML('beforeend', partHtml(LAB[n] || '•', 'প্রশ্ন লিখুন', '১'));
+      save();
+    }
+    else if (act === 'delpart') {
+      var s = b.closest('.subq'); s.parentNode.removeChild(s); save();
+    }
+    else if (act === 'addtbl') {
+      q = b.closest('.question');
+      var wraps = q.querySelectorAll('.tblwrap, .imgwrap');
+      var anchor = wraps.length ? wraps[wraps.length - 1] : q.querySelector('.stem');
+      anchor.insertAdjacentHTML('afterend', tableHtml());
+      save();
+    }
+    else if (act === 'addimg') { pickImage(b.closest('.question')); }
+    else if (act === 'imgsm') { resizeImage(b, -10); }
+    else if (act === 'imglg') { resizeImage(b, 10); }
+    else if (act === 'delimg') {
+      if (confirm('ছবিটি মুছে ফেলবে?')) { var iw = b.closest('.imgwrap'); iw.parentNode.removeChild(iw); save(); }
+    }
+    else if (act === 'addrow' || act === 'delrow' || act === 'addcol' || act === 'delcol' || act === 'deltbl') {
+      tableAct(act, b);
+    }
+    else if (act === 'fsm') { setFs(fs - 0.5); save(); }
+    else if (act === 'fsp') { setFs(fs + 0.5); save(); }
+    else if (act === 'fit') { fit(); }
+    else if (act === 'reset') {
+      if (confirm('সব পরিবর্তন মুছে শুরুর অবস্থায় ফিরে যাবে?')) {
+        P.innerHTML = DEFAULT; setFs(14); renumber();
+        try { localStorage.removeItem(KEY); localStorage.removeItem(FSKEY); } catch (err) {}
+        pushHist(); updateGuides();
+      }
+    }
+  });
+
+  // নম্বর/লেবেলে Enter চাপলে নতুন লাইন যাবে না
+  P.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.closest && e.target.closest('.mark, .lbl, td, th')) e.preventDefault();
+  });
+
+  // অন্য জায়গা থেকে কপি করলে শুধু টেক্সট বসবে
+  P.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, t);
+  });
+
+  // ---------- 10^-4 লিখলে নিজে থেকে ঘাত (10⁻⁴) হয়ে যাবে ----------
+  var SUPD = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+    '০': '⁰', '১': '¹', '২': '²', '৩': '³', '৪': '⁴', '৫': '⁵', '৬': '⁶', '৭': '⁷', '৮': '⁸', '৯': '⁹'
+  };
+  function toSup(str) {
+    return str.replace(/[0-9০-৯]/g, function (d) { return SUPD[d]; });
+  }
+  function expConvert(str) {
+    return str.replace(/\^([+\-\u2212]?)([0-9০-৯]+)/g, function (m, sg, dg) {
+      return (sg ? (sg === '+' ? '⁺' : '⁻') : '') + toSup(dg);
+    });
+  }
+  P.addEventListener('input', function (e) {
+    if (e.isComposing) return;
+    if (!e.inputType || e.inputType.indexOf('insert') !== 0) return;
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    var r = sel.getRangeAt(0), node = r.startContainer;
+    if (node.nodeType !== 3) return;
+    var off = r.startOffset, t = node.nodeValue;
+    var before = t.slice(0, off), after = t.slice(off);
+    var nb = expConvert(before);
+    // 10⁻⁴ এর পরে আরও অঙ্ক লিখলে (যেমন 10^-12) সেটাও ঘাত হবে
+    if (/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺][0-9০-৯]$/.test(nb)) nb = nb.slice(0, -1) + SUPD[nb.slice(-1)];
+    var na = expConvert(after);
+    if (nb === before && na === after) return;
+    node.nodeValue = nb + na;
+    var nr = document.createRange();
+    nr.setStart(node, nb.length);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+    save();
+  });
+
+  var timer = null;
+  P.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(save, 500);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); doRedo(); }
+  });
+
+  // ---------- গণিতের চিহ্ন ----------
+  var lastEl = null, lastRange = null;
+  document.addEventListener('selectionchange', function () {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.anchorNode) return;
+    var n = sel.anchorNode, el = (n.nodeType === 3 ? n.parentNode : n);
+    el = el.closest && el.closest('[contenteditable="true"]');
+    if (el && P.contains(el)) { lastEl = el; lastRange = sel.getRangeAt(0).cloneRange(); }
+  });
+  var symbar = document.getElementById('symbar');
+  symbar.addEventListener('mousedown', function (e) { e.preventDefault(); });   // কিবোর্ড/কার্সার যেন না হারায়
+  symbar.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sym]');
+    if (!b || !lastEl || !document.body.contains(lastEl)) return;
+    var sel = window.getSelection(), ok = false;
+    if (sel.rangeCount && sel.anchorNode) {
+      var n = sel.anchorNode, el = (n.nodeType === 3 ? n.parentNode : n);
+      el = el.closest && el.closest('[contenteditable="true"]');
+      ok = !!(el && P.contains(el));
+    }
+    if (!ok) {
+      lastEl.focus();
+      sel.removeAllRanges();
+      if (lastRange) sel.addRange(lastRange);
+    }
+    document.execCommand('insertText', false, b.getAttribute('data-sym'));
+    save();
+  });
+
+  ensureControls();
+  renumber();
+  setFs(fs);
+  pushHist();
+  updateGuides();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(updateGuides);
+  window.addEventListener('resize', updateGuides);
+  P.addEventListener('load', updateGuides, true);
+})();
+</script>
+</body>
+</html>
